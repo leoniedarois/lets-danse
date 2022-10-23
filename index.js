@@ -35,7 +35,6 @@ setup()
 createGui()
 
 const render = () => {
-  // console.log(engine.renderer.render())
   engine.renderer.render(scene, camera)
 }
 
