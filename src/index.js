@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import * as dat from 'dat.gui'
 
-import Engine from './engine'
+import Engine from '../src/engine'
 
 const engine = new Engine()
 
