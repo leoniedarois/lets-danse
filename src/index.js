@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import * as dat from 'dat.gui'
 
 import Engine from '../src/engine'
+import audio from '../src/utils/audio'
+
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
 
@@ -125,5 +127,15 @@ const onFrame = () => {
 
   render()
 }
+
+const onBeat = () => {
+  console.log( 'onBeat' )
+}
+
+audio.start( {
+  onBeat: onBeat,
+  live: false,
+  src: require('url:/public/assets/audio/iron-woodkid.mp3')
+})
 
 onFrame()
