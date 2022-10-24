@@ -2,7 +2,10 @@ import * as THREE from 'three'
 import * as dat from 'dat.gui'
 
 import Engine from '../src/engine'
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
+
+// import {assetsLoader} from '../utils/assetsLoader'
 
 const engine = new Engine()
 
@@ -15,12 +18,15 @@ let guiSetting = null
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(50, engine.width / engine.height, .1, 1000)
-  camera.position.z = 10
+  scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
+
+  camera = new THREE.PerspectiveCamera(50, engine.width / engine.height, .5, 100)
+  camera.position.z = 5
+  camera.position.y = 1
 
   // orbit controls
   const controls = new OrbitControls(camera, engine.renderer.domElement)
-  controls.enableZoom = false
+  controls.enableZoom = true
 
   // resize
   window.addEventListener('resize', onResize)
@@ -28,10 +34,53 @@ const setup = () => {
 
 const setupScene = () => {
   const geometry = new THREE.BoxGeometry(1, 1, 1)
-  const material= new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+  const material = new THREE.MeshBasicMaterial({color: 0xffff00});
   const cube = new THREE.Mesh(geometry, material)
+  // scene.add(cube)
 
-  scene.add(cube)
+  // lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1)
+  scene.add(ambientLight)
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+  directionalLight.castShadow = true
+  directionalLight.shadow.mapSize.set(1024, 1024)
+  directionalLight.shadow.camera.far = 15
+  directionalLight.shadow.camera.left = -7
+  directionalLight.shadow.camera.top = 7
+  directionalLight.shadow.camera.right = 7
+  directionalLight.shadow.camera.bottom = -7
+  directionalLight.position.set(5, 5, 5)
+  scene.add(directionalLight)
+
+  // load model
+  const loader = new GLTFLoader()
+
+  loader.load(require('url:/public/assets/models/character.glb'), function (model) {
+
+    model.scene.traverse(function (child){
+      if (child.isMesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+        // child.material = new THREE.MeshNormalMaterial()
+      }
+    })
+
+    scene.add(model.scene)
+    console.log('here', model)
+
+  }, undefined,function ( error ) {
+    console.error( error )
+  })
+
+  // floor
+  const floorGeometry = new THREE.PlaneGeometry( 100, 100 )
+  floorGeometry.rotateX(-Math.PI * 0.5)
+  const floorMaterial = new THREE.MeshBasicMaterial( {color: 0x5c595b, side: THREE.DoubleSide} )
+  const plane = new THREE.Mesh( floorGeometry, floorMaterial )
+  plane.position.z = -25
+
+  scene.add(plane)
 }
 
 const onResize = () => {
