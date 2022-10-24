@@ -1,11 +1,16 @@
-import * as THREE from '../node_modules/three/build/three.module.js'
-import * as dat from '../node_modules/dat.gui'
+// import * as THREE from '../node_modules/three/build/three.module.js'
+// import * as dat from '../node_modules/dat.gui'
+
+import * as THREE from './libs/three.module'
+import * as dat from './libs/dat.gui.min'
+import OrbitControls from './libs/orbitcontrols'
+import {GLTFLoader} from './libs/gltfloader'
 
 import Engine from '../src/engine'
 import audio from '../src/utils/audio'
 
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
+// import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+// import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
 
 // import {assetsLoader} from '../utils/assetsLoader'
 
