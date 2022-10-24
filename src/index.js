@@ -15,14 +15,20 @@ let camera = null
 let gui = null
 let guiSetting = null
 
+let mixer = null
+let previousTime = 0
+const clock = new THREE.Clock()
+
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
+  // scene.fog = new THREE.Fog( 0xFF6685, 1, 50 )
   scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
 
   camera = new THREE.PerspectiveCamera(50, engine.width / engine.height, .5, 100)
   camera.position.z = 5
   camera.position.y = 1
+  camera.lookAt(0, 1, 0)
 
   // orbit controls
   const controls = new OrbitControls(camera, engine.renderer.domElement)
@@ -55,9 +61,7 @@ const setupScene = () => {
 
   // load model
   const loader = new GLTFLoader()
-
   loader.load(require('url:/public/assets/models/character.glb'), function (model) {
-
     model.scene.traverse(function (child){
       if (child.isMesh) {
         child.castShadow = true
@@ -67,7 +71,11 @@ const setupScene = () => {
     })
 
     scene.add(model.scene)
-    console.log('here', model)
+
+    mixer = new THREE.AnimationMixer(model.scene)
+    const action = mixer.clipAction(model.animations[0])
+    console.log(action, 'action')
+    action.play()
 
   }, undefined,function ( error ) {
     console.error( error )
@@ -79,6 +87,7 @@ const setupScene = () => {
   const floorMaterial = new THREE.MeshBasicMaterial( {color: 0x5c595b, side: THREE.DoubleSide} )
   const plane = new THREE.Mesh( floorGeometry, floorMaterial )
   plane.position.z = -25
+  plane.receiveShadow = true;
 
   scene.add(plane)
 }
@@ -103,9 +112,16 @@ const render = () => {
 }
 
 const onFrame = () => {
+  const elapsedTime = clock.getElapsedTime()
+  const deltaTime = elapsedTime - previousTime
+  previousTime = elapsedTime
+
   requestAnimationFrame(onFrame)
 
   // actions
+  if(mixer) {
+    mixer.update(deltaTime)
+  }
 
   render()
 }
