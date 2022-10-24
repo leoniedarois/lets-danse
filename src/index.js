@@ -1,5 +1,5 @@
-import * as THREE from "../node_modules/three/build/three.module.js"
-import * as dat from 'dat.gui'
+import * as THREE from '../node_modules/three/build/three.module.js'
+import * as dat from '../node_modules/dat.gui'
 
 import Engine from '../src/engine'
 import audio from '../src/utils/audio'
