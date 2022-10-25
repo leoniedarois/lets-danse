@@ -18,7 +18,6 @@ class Audio {
     this.masterGain = this.context.createGain()
 
     this.fftSize = 1024
-
     this.lastTime = Date.now()
 
     this.audioRange = 8
@@ -297,4 +296,4 @@ class Audio {
   }
 }
 
-export default new Audio()
+export default Audio

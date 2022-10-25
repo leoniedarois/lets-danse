@@ -1,6 +1,3 @@
-// import * as THREE from '../node_modules/three/build/three.module.js'
-// import * as dat from '../node_modules/dat.gui'
-
 import * as THREE from './libs/three.module'
 import * as dat from './libs/dat.gui.min'
 import OrbitControls from './libs/orbitcontrols'
@@ -8,12 +5,7 @@ import {GLTFLoader} from './libs/gltfloader'
 import { Reflector } from 'three/examples/jsm/objects/Reflector'
 
 import Engine from '../src/engine'
-import audio from '../src/utils/audio'
-
-// import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-// import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
-
-// import {assetsLoader} from '../utils/assetsLoader'
+import Audio from '../src/utils/audio'
 
 const engine = new Engine()
 
@@ -27,10 +19,12 @@ let mixer = null
 let previousTime = 0
 const clock = new THREE.Clock()
 let cube = null
+let plane = null
+let audio = null
+
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
-  // scene.fog = new THREE.Fog( 0xFF6685, 1, 50 )
   scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
 
   camera = new THREE.PerspectiveCamera(45, engine.width / engine.height, .5, 50)
@@ -47,22 +41,28 @@ const setup = () => {
 }
 
 const setupScene = () => {
+  // debug cube
   const geometry = new THREE.BoxGeometry(1, 1, 1)
-  const material = new THREE.MeshStandardMaterial({color: 0xffff00});
-
+  const material = new THREE.MeshStandardMaterial({color: 0xffff00})
   cube = new THREE.Mesh(geometry, material)
   cube.castShadow = true
   cube.receiveShadow = true
   // scene.add(cube)
 
   // lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, .8)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
   directionalLight.castShadow = true
-  directionalLight.position.set(1, 2, 0)
+  directionalLight.position.set(4, 3, 50)
   scene.add(directionalLight)
+
+  const lightSetting = guiSetting.addFolder('Lights')
+  lightSetting.add(directionalLight.position, 'x', 0, 50, .1)
+  lightSetting.add(directionalLight.position, 'y', 0, 50, .1)
+  lightSetting.add(directionalLight.position, 'z', 0, 50, .1)
+  // lightSetting.open()
 
   // load model
   const loader = new GLTFLoader()
@@ -73,14 +73,13 @@ const setupScene = () => {
         // child.material = new THREE.MeshNormalMaterial()
       }
     })
-
     model.scene.position.y = -.8
-
     scene.add(model.scene)
 
     mixer = new THREE.AnimationMixer(model.scene)
     const action = mixer.clipAction(model.animations[0])
-    console.log(action, 'action')
+    console.log(model.animations, 'animations')
+
     action.play()
 
   }, undefined,function ( error ) {
@@ -91,7 +90,7 @@ const setupScene = () => {
   const floorGeometry = new THREE.CircleGeometry( 5, 40)
   floorGeometry.rotateX(-Math.PI * 0.5)
   const floorMaterial = new THREE.MeshStandardMaterial({color: 0x5c595b})
-  const plane = new Reflector(floorGeometry, floorMaterial)
+  plane = new Reflector(floorGeometry, floorMaterial)
   // plane.position.z = -25
   plane.position.y = -.8
   plane.receiveShadow = true
@@ -110,9 +109,33 @@ const createGui = () => {
   guiSetting.open()
 }
 
+// audio
+const canvas = document.querySelector('canvas')
+
+const initAudio = () => {
+  canvas.addEventListener('click', startAudio)
+}
+
+const onBeat = () => {
+  console.log('onBeat', audio.volume)
+}
+
+const startAudio = () => {
+  audio = new Audio()
+
+  audio.start( {
+    onBeat: onBeat,
+    live: false,
+    src: require('url:/public/assets/audio/iron-woodkid.mp3')
+  })
+
+  canvas.removeEventListener('click', startAudio)
+}
+
 setup()
-setupScene()
 createGui()
+initAudio()
+setupScene()
 
 const render = () => {
   engine.renderer.render(scene, camera)
@@ -125,22 +148,11 @@ const onFrame = () => {
 
   requestAnimationFrame(onFrame)
 
-  // actions
-  if(mixer) {
-    mixer.update(deltaTime)
-  }
+  // update actions
+  if(mixer) mixer.update(deltaTime)
+  if(audio) audio.update()
 
   render()
 }
-
-const onBeat = () => {
-  console.log( 'onBeat' )
-}
-
-audio.start( {
-  onBeat: onBeat,
-  live: false,
-  src: require('url:/public/assets/audio/iron-woodkid.mp3')
-})
 
 onFrame()
