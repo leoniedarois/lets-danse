@@ -4,6 +4,8 @@ export default class Engine {
 
   constructor() {
     this.renderer = new THREE.WebGLRenderer()
+    this.renderer.shadowMap.enabled = true
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
     document.body.appendChild( this.renderer.domElement )
 
     this.width = 0

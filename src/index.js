@@ -5,6 +5,7 @@ import * as THREE from './libs/three.module'
 import * as dat from './libs/dat.gui.min'
 import OrbitControls from './libs/orbitcontrols'
 import {GLTFLoader} from './libs/gltfloader'
+import { Reflector } from 'three/examples/jsm/objects/Reflector'
 
 import Engine from '../src/engine'
 import audio from '../src/utils/audio'
@@ -25,21 +26,21 @@ let guiSetting = null
 let mixer = null
 let previousTime = 0
 const clock = new THREE.Clock()
-
+let cube = null
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
   // scene.fog = new THREE.Fog( 0xFF6685, 1, 50 )
   scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
 
-  camera = new THREE.PerspectiveCamera(50, engine.width / engine.height, .5, 100)
+  camera = new THREE.PerspectiveCamera(45, engine.width / engine.height, .5, 50)
   camera.position.z = 5
   camera.position.y = 1
   camera.lookAt(0, 1, 0)
 
   // orbit controls
   const controls = new OrbitControls(camera, engine.renderer.domElement)
-  controls.enableZoom = true
+  controls.enableZoom = false
 
   // resize
   window.addEventListener('resize', onResize)
@@ -47,35 +48,33 @@ const setup = () => {
 
 const setupScene = () => {
   const geometry = new THREE.BoxGeometry(1, 1, 1)
-  const material = new THREE.MeshBasicMaterial({color: 0xffff00});
-  const cube = new THREE.Mesh(geometry, material)
+  const material = new THREE.MeshStandardMaterial({color: 0xffff00});
+
+  cube = new THREE.Mesh(geometry, material)
+  cube.castShadow = true
+  cube.receiveShadow = true
   // scene.add(cube)
 
   // lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1)
+  const ambientLight = new THREE.AmbientLight(0xffffff, .8)
   scene.add(ambientLight)
 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
   directionalLight.castShadow = true
-  directionalLight.shadow.mapSize.set(1024, 1024)
-  directionalLight.shadow.camera.far = 500
-  directionalLight.shadow.camera.left = -7
-  directionalLight.shadow.camera.top = 7
-  directionalLight.shadow.camera.right = 7
-  directionalLight.shadow.camera.bottom = -7
-  directionalLight.position.set(5, 5, 5)
+  directionalLight.position.set(1, 2, 0)
   scene.add(directionalLight)
 
   // load model
   const loader = new GLTFLoader()
-  loader.load(require('url:/public/assets/models/character.glb'), function (model) {
-    model.scene.traverse(function (child){
+  loader.load(require('url:/public/assets/models/character.glb'),  (model) => {
+    model.scene.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true
-        child.receiveShadow = true
         // child.material = new THREE.MeshNormalMaterial()
       }
     })
+
+    model.scene.position.y = -.8
 
     scene.add(model.scene)
 
@@ -89,12 +88,13 @@ const setupScene = () => {
   })
 
   // floor
-  const floorGeometry = new THREE.PlaneGeometry( 100, 100 )
+  const floorGeometry = new THREE.CircleGeometry( 5, 40)
   floorGeometry.rotateX(-Math.PI * 0.5)
-  const floorMaterial = new THREE.MeshBasicMaterial( {color: 0x5c595b, side: THREE.DoubleSide} )
-  const plane = new THREE.Mesh( floorGeometry, floorMaterial )
-  plane.position.z = -25
-  plane.receiveShadow = true;
+  const floorMaterial = new THREE.MeshStandardMaterial({color: 0x5c595b})
+  const plane = new Reflector(floorGeometry, floorMaterial)
+  // plane.position.z = -25
+  plane.position.y = -.8
+  plane.receiveShadow = true
 
   scene.add(plane)
 }
