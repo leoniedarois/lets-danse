@@ -13,5 +13,43 @@ canvas {
 }
 
 canvas {
-  /*z-index: -1;*/
+  z-index: -1;
+}
+
+.close-button {
+  display: none;
+}
+
+.button {
+  all: unset;
+
+  font-size: 27px;
+  /*color: white;*/
+  margin-bottom: 30px;
+  background: white;
+  padding: 8px 20px;
+  border-radius: 40px;
+  font-family: 'Freehand', cursive;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: rgba(275, 275, 275, 70%);
+  padding: 10px 22px;
+  transition: .5s;
+}
+
+.hide {
+  display: none !important;
+}
+
+.background {
+  height: 100vh;
+  width: 100vw;
+
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

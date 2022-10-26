@@ -151,10 +151,11 @@ const createGui = () => {
 }
 
 // audio
-const canvas = document.querySelector('canvas')
+const button = document.querySelector('button')
+const intro = document.querySelector('.background')
 
 const initAudio = () => {
-  canvas.addEventListener('click', startAudio)
+  button.addEventListener('click', startAudio)
 }
 
 const onDocumentMouseMove = (event) => {
@@ -170,11 +171,14 @@ const onBeat = () => {
   console.log('onBeat', audio.values)
 
   backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
-  backgroundMaterial.uniforms.music2.value = audio.values[1]
+  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.9
   backgroundMaterial.uniforms.music3.value = audio.values[4]
 }
 
 const startAudio = () => {
+
+  intro.classList.add('hide')
+
   audio = new Audio()
 
   audio.start( {
@@ -187,7 +191,7 @@ const startAudio = () => {
   dancer.visible = true
   if (action) action.play()
 
-  canvas.removeEventListener('click', startAudio)
+  button.removeEventListener('click', startAudio)
 }
 
 createGui()
@@ -210,7 +214,7 @@ const onFrame = () => {
   requestAnimationFrame(onFrame)
 
   // update actions
-  if (mixer && audio) mixer.update(audio.volume / 250)
+  if (mixer && audio) mixer.update(audio.volume / 350)
   if (audio) audio.update()
 
   render()
