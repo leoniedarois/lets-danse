@@ -30,6 +30,10 @@ let deltaTime = null
 let time = null
 let musicTempo = null
 
+let mouse = new THREE.Vector2()
+let controls = null
+let dancer = null
+
 let fakeSky = null
 let backgroundMaterial = null
 
@@ -61,8 +65,9 @@ const setup = () => {
   scene.add(fakeSky)
 
   // orbit controls
-  const controls = new OrbitControls(camera, engine.renderer.domElement)
+  controls = new OrbitControls(camera, engine.renderer.domElement)
   controls.enableZoom = false
+  controls.enableRotate = false
 
   // resize
   window.addEventListener('resize', onResize)
@@ -101,7 +106,10 @@ const setupScene = () => {
         // child.material = new THREE.MeshNormalMaterial()
       }
     })
-    model.scene.position.y = -.8
+
+    dancer = model.scene
+    dancer.position.y = -.8
+    dancer.visible = false
     scene.add(model.scene)
 
     mixer = new THREE.AnimationMixer(model.scene)
@@ -118,11 +126,10 @@ const setupScene = () => {
   const floorMaterial = new THREE.MeshStandardMaterial({color: 0x5c595b})
   mirrorFloor = new Reflector(floorGeometry, {
     color: new THREE.Color(0x5c595b),
-    clipBias: 0.003,
+    clipBias: 0.1,
     textureWidth: window.innerWidth * window.devicePixelRatio,
     textureHeight: window.innerHeight * window.devicePixelRatio
   })
-  // plane.position.z = -25
   mirrorFloor.position.y = -.8
   mirrorFloor.receiveShadow = true
 
@@ -139,7 +146,8 @@ const onResize = () => {
 const createGui = () => {
   gui = new dat.GUI()
   guiSetting = gui.addFolder('Settings')
-  guiSetting.open()
+  gui.close()
+
 }
 
 // audio
@@ -149,11 +157,20 @@ const initAudio = () => {
   canvas.addEventListener('click', startAudio)
 }
 
+const onDocumentMouseMove = (event) => {
+  event.preventDefault()
+
+  // parallax effect
+  camera.position.x = (event.clientX / window.innerWidth) / 5
+}
+
+document.addEventListener('mousemove', onDocumentMouseMove, false)
+
 const onBeat = () => {
   console.log('onBeat', audio.values)
 
   backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
-  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.6
+  backgroundMaterial.uniforms.music2.value = audio.values[1]
   backgroundMaterial.uniforms.music3.value = audio.values[4]
 }
 
@@ -167,7 +184,8 @@ const startAudio = () => {
   })
 
   // start model animation
-  action.play()
+  dancer.visible = true
+  if (action) action.play()
 
   canvas.removeEventListener('click', startAudio)
 }
@@ -192,7 +210,7 @@ const onFrame = () => {
   requestAnimationFrame(onFrame)
 
   // update actions
-  if (mixer && audio) mixer.update(audio.volume / 500)
+  if (mixer && audio) mixer.update(audio.volume / 250)
   if (audio) audio.update()
 
   render()

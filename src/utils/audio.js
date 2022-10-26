@@ -135,6 +135,7 @@ class Audio {
       this.ctx = this.canvas.getContext("2d")
       this.canvas.style.position = "absolute"
       this.canvas.style.zIndex = 9999
+      this.canvas.style.opacity = 0
       this.canvas.style.top = 0
       this.canvas.style.left = 0
       document.body.append( this.canvas )
