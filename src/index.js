@@ -2,7 +2,7 @@ import * as THREE from './libs/three.module'
 import * as dat from './libs/dat.gui.min'
 import OrbitControls from './libs/orbitcontrols'
 import {GLTFLoader} from './libs/gltfloader'
-import { Reflector } from 'three/examples/jsm/objects/Reflector'
+import { Reflector } from './libs/Reflector'
 
 import Engine from '../src/engine'
 import Audio from '../src/utils/audio'
@@ -22,7 +22,7 @@ let mixer = null
 let previousTime = 0
 const clock = new THREE.Clock()
 let cube = null
-let plane = null
+let mirrorFloor = null
 let audio = null
 let action = null
 
@@ -116,12 +116,17 @@ const setupScene = () => {
   const floorGeometry = new THREE.CircleGeometry( 5, 40)
   floorGeometry.rotateX(-Math.PI * 0.5)
   const floorMaterial = new THREE.MeshStandardMaterial({color: 0x5c595b})
-  plane = new Reflector(floorGeometry, floorMaterial)
+  mirrorFloor = new Reflector(floorGeometry, {
+    color: new THREE.Color(0x5c595b),
+    clipBias: 0.003,
+    textureWidth: window.innerWidth * window.devicePixelRatio,
+    textureHeight: window.innerHeight * window.devicePixelRatio
+  })
   // plane.position.z = -25
-  plane.position.y = -.8
-  plane.receiveShadow = true
+  mirrorFloor.position.y = -.8
+  mirrorFloor.receiveShadow = true
 
-  scene.add(plane)
+  scene.add(mirrorFloor)
 }
 
 // resize

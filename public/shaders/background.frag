@@ -13,7 +13,7 @@ void main() {
     vec3 color = vec3(0.0);
     float pct = uTime * vUv.y;
 
-    color = mix(colorA, colorB, vUv.x);
+    color = mix(colorA, colorB, vUv.y);
 
     gl_FragColor = vec4(color, 1.0 );
 }
