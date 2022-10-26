@@ -26,6 +26,12 @@ let plane = null
 let audio = null
 let action = null
 
+let deltaTime = null
+let musicTempo = null
+
+let fakeSky = null
+let backgroundMaterial = null
+
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
@@ -38,12 +44,18 @@ const setup = () => {
 
   // fake sky
   const sphere = new THREE.SphereGeometry(15, 32, 16)
-  const backgroundMaterial = new THREE.ShaderMaterial({
+  backgroundMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: {value: deltaTime},
+      music: {value: 1},
+      music2: {value: 1},
+      music3: {value: 1}
+    },
     side: THREE.BackSide,
     vertexShader: vertexShader,
     fragmentShader: fragmentShader
   })
-  const fakeSky = new THREE.Mesh(sphere, backgroundMaterial)
+  fakeSky = new THREE.Mesh(sphere, backgroundMaterial)
   // background.position.z = -50
   scene.add(fakeSky)
 
@@ -133,6 +145,10 @@ const initAudio = () => {
 
 const onBeat = () => {
   console.log('onBeat', audio.values)
+
+  backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
+  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.5
+  backgroundMaterial.uniforms.music3.value = audio.values[4]
 }
 
 const startAudio = () => {
@@ -161,7 +177,7 @@ const render = () => {
 
 const onFrame = () => {
   const elapsedTime = clock.getElapsedTime()
-  const deltaTime = elapsedTime - previousTime
+  deltaTime = elapsedTime - previousTime
   previousTime = elapsedTime
 
   requestAnimationFrame(onFrame)
