@@ -7,6 +7,9 @@ import { Reflector } from 'three/examples/jsm/objects/Reflector'
 import Engine from '../src/engine'
 import Audio from '../src/utils/audio'
 
+import vertexShader from '../public/shaders/background.vert'
+import fragmentShader from '../public/shaders/background.frag'
+
 const engine = new Engine()
 
 let scene = null
@@ -21,16 +24,28 @@ const clock = new THREE.Clock()
 let cube = null
 let plane = null
 let audio = null
+let action = null
 
 const setup = () => {
   // scene & camera
   scene = new THREE.Scene()
-  scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
+  // scene.background = new THREE.TextureLoader().load(require("url:/public/assets/textures/wall.png"))
 
   camera = new THREE.PerspectiveCamera(45, engine.width / engine.height, .5, 50)
   camera.position.z = 5
   camera.position.y = 1
   camera.lookAt(0, 1, 0)
+
+  // fake sky
+  const sphere = new THREE.SphereGeometry(15, 32, 16)
+  const backgroundMaterial = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader
+  })
+  const fakeSky = new THREE.Mesh(sphere, backgroundMaterial)
+  // background.position.z = -50
+  scene.add(fakeSky)
 
   // orbit controls
   const controls = new OrbitControls(camera, engine.renderer.domElement)
@@ -77,10 +92,8 @@ const setupScene = () => {
     scene.add(model.scene)
 
     mixer = new THREE.AnimationMixer(model.scene)
-    const action = mixer.clipAction(model.animations[0])
+    action = mixer.clipAction(model.animations[0])
     console.log(model.animations, 'animations')
-
-    action.play()
 
   }, undefined,function ( error ) {
     console.error( error )
@@ -98,11 +111,13 @@ const setupScene = () => {
   scene.add(plane)
 }
 
+// resize
 const onResize = () => {
   camera.aspect = engine.width / engine.height
   camera.updateProjectionMatrix()
 }
 
+// gui
 const createGui = () => {
   gui = new dat.GUI()
   guiSetting = gui.addFolder('Settings')
@@ -117,7 +132,7 @@ const initAudio = () => {
 }
 
 const onBeat = () => {
-  console.log('onBeat', audio.volume)
+  console.log('onBeat', audio.values)
 }
 
 const startAudio = () => {
@@ -129,11 +144,14 @@ const startAudio = () => {
     src: require('url:/public/assets/audio/iron-woodkid.mp3')
   })
 
+  // start model animation
+  action.play()
+
   canvas.removeEventListener('click', startAudio)
 }
 
-setup()
 createGui()
+setup()
 initAudio()
 setupScene()
 
@@ -149,8 +167,8 @@ const onFrame = () => {
   requestAnimationFrame(onFrame)
 
   // update actions
-  if(mixer) mixer.update(deltaTime)
-  if(audio) audio.update()
+  if (mixer) mixer.update(deltaTime)
+  if (audio) audio.update()
 
   render()
 }
