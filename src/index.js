@@ -27,6 +27,7 @@ let audio = null
 let action = null
 
 let deltaTime = null
+let time = null
 let musicTempo = null
 
 let fakeSky = null
@@ -46,7 +47,7 @@ const setup = () => {
   const sphere = new THREE.SphereGeometry(15, 32, 16)
   backgroundMaterial = new THREE.ShaderMaterial({
     uniforms: {
-      uTime: {value: deltaTime},
+      uTime: {value: 0},
       music: {value: 1},
       music2: {value: 1},
       music3: {value: 1}
@@ -104,7 +105,7 @@ const setupScene = () => {
     scene.add(model.scene)
 
     mixer = new THREE.AnimationMixer(model.scene)
-    action = mixer.clipAction(model.animations[0])
+    action = mixer.clipAction(model.animations[3])
     console.log(model.animations, 'animations')
 
   }, undefined,function ( error ) {
@@ -147,7 +148,7 @@ const onBeat = () => {
   console.log('onBeat', audio.values)
 
   backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
-  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.5
+  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.6
   backgroundMaterial.uniforms.music3.value = audio.values[4]
 }
 
@@ -180,10 +181,13 @@ const onFrame = () => {
   deltaTime = elapsedTime - previousTime
   previousTime = elapsedTime
 
+  time += 0.01
+  // backgroundMaterial.uniforms.uTime.value = time
+
   requestAnimationFrame(onFrame)
 
   // update actions
-  if (mixer) mixer.update(deltaTime)
+  if (mixer && audio) mixer.update(audio.volume / 500)
   if (audio) audio.update()
 
   render()
