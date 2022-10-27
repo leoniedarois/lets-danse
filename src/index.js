@@ -9,6 +9,8 @@ import Audio from '../src/utils/audio'
 
 import vertexShader from '../public/shaders/background.vert'
 import fragmentShader from '../public/shaders/background.frag'
+import {randomIntFromInterval} from './utils/randomBetweenTwoValues'
+import {MathUtils} from './libs/three.module'
 
 const engine = new Engine()
 
@@ -33,6 +35,8 @@ let musicTempo = null
 let mouse = new THREE.Vector2()
 let controls = null
 let dancer = null
+
+const cubes = []
 
 let fakeSky = null
 let backgroundMaterial = null
@@ -66,21 +70,35 @@ const setup = () => {
 
   // orbit controls
   controls = new OrbitControls(camera, engine.renderer.domElement)
-  controls.enableZoom = false
-  controls.enableRotate = false
+  controls.enableZoom = true
+  controls.enableRotate = true
 
   // resize
   window.addEventListener('resize', onResize)
 }
+let posTargetCubes = []
+let rotTargetCubes = []
 
 const setupScene = () => {
-  // debug cube
-  const geometry = new THREE.BoxGeometry(1, 1, 1)
-  const material = new THREE.MeshStandardMaterial({color: 0xffff00})
-  cube = new THREE.Mesh(geometry, material)
-  cube.castShadow = true
-  cube.receiveShadow = true
-  // scene.add(cube)
+  // create cubes
+  for (let i = 0; i < 60; i++) {
+
+    let random = randomIntFromInterval(.1, .25, .05)
+    const geometry = new THREE.BoxGeometry(random, random, random)
+    const material = new THREE.MeshLambertMaterial({color: 0xebb434})
+    cube = new THREE.Mesh(geometry, material)
+
+    const clonecube = cube.clone()
+
+    clonecube.position.set(randomIntFromInterval(-3, 3, .5), -.6, randomIntFromInterval(-3, 3, .5))
+    posTargetCubes.push(clonecube.position.y)
+    rotTargetCubes.push(clonecube.rotation.y)
+    cubes.push(clonecube)
+    scene.add(clonecube)
+  }
+
+  console.log(cubes)
+  // scene.add(cubes)
 
   // lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
@@ -95,7 +113,6 @@ const setupScene = () => {
   lightSetting.add(directionalLight.position, 'x', 0, 50, .1)
   lightSetting.add(directionalLight.position, 'y', 0, 50, .1)
   lightSetting.add(directionalLight.position, 'z', 0, 50, .1)
-  // lightSetting.open()
 
   // load model
   const loader = new GLTFLoader()
@@ -110,9 +127,9 @@ const setupScene = () => {
     dancer = model.scene
     dancer.position.y = -.8
     dancer.visible = false
-    scene.add(model.scene)
+    scene.add(dancer)
 
-    mixer = new THREE.AnimationMixer(model.scene)
+    mixer = new THREE.AnimationMixer(dancer)
     action = mixer.clipAction(model.animations[3])
     console.log(model.animations, 'animations')
 
@@ -167,8 +184,21 @@ const onDocumentMouseMove = (event) => {
 
 document.addEventListener('mousemove', onDocumentMouseMove, false)
 
+let cubeColor = [
+  "ebb434", "d55df0", "f07a5d"
+]
+
 const onBeat = () => {
-  console.log('onBeat', audio.values)
+  const colour = new THREE.Color()
+  colour.setHex(`0x${cubeColor[Math.floor(Math.random() * cubeColor.length)]}`)
+
+  cubes.forEach((cube, i) => {
+    posTargetCubes[i] = audio.values[0] * Math.random() - 0.20
+    cube.rotation.y = Math.PI * 2
+    cube.rotation.x = Math.PI * 2
+    cube.rotation.z = Math.PI * audio.values[1]
+    cube.material.color = colour
+  })
 
   backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
   backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.9
@@ -188,7 +218,7 @@ const startAudio = () => {
   })
 
   // start model animation
-  dancer.visible = true
+  if (dancer) dancer.visible = true
   if (action) action.play()
 
   button.removeEventListener('click', startAudio)
@@ -209,14 +239,19 @@ const onFrame = () => {
   previousTime = elapsedTime
 
   time += 0.01
-  // backgroundMaterial.uniforms.uTime.value = time
-
   requestAnimationFrame(onFrame)
 
   // update actions
   if (mixer && audio) mixer.update(audio.volume / 350)
-  if (audio) audio.update()
 
+  if (audio) {
+    audio.update()
+
+    cubes.forEach((cube, i) => {
+      cube.position.y = MathUtils.lerp(cube.position.y, posTargetCubes[i], 0.1)
+      cube.rotation.y = MathUtils.lerp(cube.rotation.y, rotTargetCubes[i], 0.05)
+    })
+  }
   render()
 }
 

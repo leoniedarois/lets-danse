@@ -34,7 +34,7 @@ canvas {
 }
 
 .button:hover {
-  background: rgba(275, 275, 275, 70%);
+  background: rgba(255, 255, 255, 70%);
   padding: 10px 22px;
   transition: .5s;
 }
