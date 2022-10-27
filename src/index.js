@@ -77,13 +77,14 @@ const setup = () => {
   window.addEventListener('resize', onResize)
 }
 let posTargetCubes = []
+let posTargetCubesX = []
 let rotTargetCubes = []
 
 const setupScene = () => {
   // create cubes
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 100; i++) {
 
-    let random = randomIntFromInterval(.1, .25, .05)
+    let random = randomIntFromInterval(.05, .2, .05)
     const geometry = new THREE.BoxGeometry(random, random, random)
     const material = new THREE.MeshLambertMaterial({color: 0xebb434})
     cube = new THREE.Mesh(geometry, material)
@@ -92,6 +93,7 @@ const setupScene = () => {
 
     clonecube.position.set(randomIntFromInterval(-3, 3, .5), -.6, randomIntFromInterval(-3, 3, .5))
     posTargetCubes.push(clonecube.position.y)
+    posTargetCubesX.push(clonecube.position.x)
     rotTargetCubes.push(clonecube.rotation.y)
     cubes.push(clonecube)
     scene.add(clonecube)
@@ -193,7 +195,8 @@ const onBeat = () => {
   colour.setHex(`0x${cubeColor[Math.floor(Math.random() * cubeColor.length)]}`)
 
   cubes.forEach((cube, i) => {
-    posTargetCubes[i] = audio.values[0] * Math.random() - 0.20
+    posTargetCubes[i] = audio.values[0] * Math.random() / 5
+    posTargetCubesX[i] = randomIntFromInterval(-3, 3, .5)
     cube.rotation.y = Math.PI * 2
     cube.rotation.x = Math.PI * 2
     cube.rotation.z = Math.PI * audio.values[1]
@@ -201,25 +204,35 @@ const onBeat = () => {
   })
 
   backgroundMaterial.uniforms.music.value = audio.values[2] * 1.5
-  backgroundMaterial.uniforms.music2.value = audio.values[1] * 1.9
+  backgroundMaterial.uniforms.music2.value = audio.values[4] * 1.9
   backgroundMaterial.uniforms.music3.value = audio.values[4]
 }
 
 const startAudio = () => {
 
-  intro.classList.add('hide')
 
-  audio = new Audio()
-
-  audio.start( {
-    onBeat: onBeat,
-    live: false,
-    src: require('url:/public/assets/audio/iron-woodkid.mp3')
-  })
 
   // start model animation
-  if (dancer) dancer.visible = true
-  if (action) action.play()
+  if (dancer && action) {
+    dancer.visible = true
+    intro.classList.add('hide')
+
+    audio = new Audio()
+
+    audio.start( {
+      onBeat: onBeat,
+      live: false,
+      src: require('url:/public/assets/audio/iron-woodkid.mp3')
+    })
+
+    action.play()
+
+    setTimeout(() => {
+      cubes.forEach((cube, i) => {
+        cube.position.x = MathUtils.lerp(cube.position.x, posTargetCubesX[i], 0.5)
+      })
+    }, 16500)
+  }
 
   button.removeEventListener('click', startAudio)
 }
@@ -242,14 +255,14 @@ const onFrame = () => {
   requestAnimationFrame(onFrame)
 
   // update actions
-  if (mixer && audio) mixer.update(audio.volume / 350)
+  if (mixer && audio) mixer.update(audio.volume / 600)
 
   if (audio) {
     audio.update()
 
     cubes.forEach((cube, i) => {
-      cube.position.y = MathUtils.lerp(cube.position.y, posTargetCubes[i], 0.1)
-      cube.rotation.y = MathUtils.lerp(cube.rotation.y, rotTargetCubes[i], 0.05)
+      cube.position.y = MathUtils.lerp(cube.position.y, posTargetCubes[i], 0.8)
+      cube.rotation.y = MathUtils.lerp(cube.rotation.y, rotTargetCubes[i], 0.5)
     })
   }
   render()
