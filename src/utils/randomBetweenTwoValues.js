@@ -1,4 +1,4 @@
-// Rand a number included between two value
+// Rand a number included between two values
 export const randomIntFromInterval = (min, max, interval) => {
   if (typeof(interval)==='undefined') interval = 1
   const rand = Math.floor(Math.random()*(max - min + interval) / interval)

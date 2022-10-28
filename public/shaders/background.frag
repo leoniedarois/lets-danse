@@ -11,7 +11,6 @@ void main() {
     vec3 colorA = vec3(music, 0.0, 1.0);
 
     vec3 color = vec3(0.0);
-    float pct = uTime * vUv.y;
 
     color = mix(colorA, colorB, vUv.y);
 
